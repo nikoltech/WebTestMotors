@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTestMotors.DataAccess", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataAccess", "DataAccess", "{C08950E4-DB3A-4768-823A-1B319B528811}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebTestMotors.DataAccess.Integration.Tests", "WebTestMotors.DataAccess.Integration.Tests\WebTestMotors.DataAccess.Integration.Tests.csproj", "{1CBD15D4-1568-4546-AE51-019C0349DAB7}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,17 +23,12 @@ Global
 		{B1E220EB-5C41-44AA-A212-237C81013936}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1E220EB-5C41-44AA-A212-237C81013936}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1E220EB-5C41-44AA-A212-237C81013936}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1CBD15D4-1568-4546-AE51-019C0349DAB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1CBD15D4-1568-4546-AE51-019C0349DAB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1CBD15D4-1568-4546-AE51-019C0349DAB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1CBD15D4-1568-4546-AE51-019C0349DAB7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B1E220EB-5C41-44AA-A212-237C81013936} = {C08950E4-DB3A-4768-823A-1B319B528811}
-		{1CBD15D4-1568-4546-AE51-019C0349DAB7} = {C08950E4-DB3A-4768-823A-1B319B528811}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {30A43F86-AE3D-4E48-B785-8E6FE92BF2BB}
