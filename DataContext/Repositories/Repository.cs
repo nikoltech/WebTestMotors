@@ -8,9 +8,9 @@
 
     public class Repository : IRepository
     {
-        private readonly DataContext context;
+        private readonly IDataContext context;
 
-        public Repository(DataContext context)
+        public Repository(IDataContext context)
         {
             this.context = context;
         }

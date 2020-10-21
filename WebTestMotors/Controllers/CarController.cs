@@ -64,7 +64,7 @@
 
             try
             {
-                Car result;
+                Car result = null;
                 if (string.IsNullOrEmpty(car.Id))
                 {
                     result = await this.repository.CreateCarAsync(car).ConfigureAwait(false);

@@ -30,8 +30,8 @@ namespace WebTestMotors
                 sp.GetRequiredService<IOptions<MongoDbSettings>>().Value);
             
             // Resolve dependencies
+            services.AddScoped<IDataContext, DataContext>();
             services.AddScoped<IRepository, Repository>();
-            services.AddScoped<DataContext>();
 
             services.AddControllers();
         }

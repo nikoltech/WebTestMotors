@@ -4,16 +4,16 @@
     using MongoDb;
     using MongoDB.Driver;
 
-    public class DataContext
+    public class DataContext : IDataContext
     {
+        private readonly IMongoDatabase db;
+
         public DataContext(IMongoDbSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
-            var database = client.GetDatabase(settings.DatabaseName);
-
-            this.Cars = database.GetCollection<Car>("Cars");
+            this.db = client.GetDatabase(settings.DatabaseName);
         }
 
-        public readonly IMongoCollection<Car> Cars;
+        public IMongoCollection<Car> Cars => db.GetCollection<Car>("Cars");
     }
 }
