@@ -8,10 +8,9 @@
     {
         private readonly IMongoDatabase db;
 
-        public DataContext(IMongoDbSettings settings)
+        public DataContext(IMongoDatabase database)
         {
-            var client = new MongoClient(settings.ConnectionString);
-            this.db = client.GetDatabase(settings.DatabaseName);
+            this.db = database;
         }
 
         public IMongoCollection<Car> Cars => db.GetCollection<Car>("Cars");

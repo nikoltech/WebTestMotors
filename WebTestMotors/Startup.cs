@@ -9,6 +9,7 @@ namespace WebTestMotors
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
+    using MongoDB.Driver;
 
     public class Startup
     {
@@ -28,7 +29,13 @@ namespace WebTestMotors
 
             services.AddSingleton<IMongoDbSettings>(sp =>
                 sp.GetRequiredService<IOptions<MongoDbSettings>>().Value);
-            
+
+            services.AddScoped<IMongoDatabase>(sp => {
+                var dbParams = sp.GetRequiredService<IMongoDbSettings>();
+                var client = new MongoClient(dbParams.ConnectionString);
+                return client.GetDatabase(dbParams.DatabaseName);
+            });
+
             // Resolve dependencies
             services.AddScoped<IDataContext, DataContext>();
             services.AddScoped<IRepository, Repository>();
