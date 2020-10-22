@@ -21,7 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Fixtures\" />
+    <Folder Include="BasicTests\" />
+    <Folder Include="IntegrationTests\" />
+    <Folder Include="Helpers\" />
+    <Folder Include="AuthTests\" />
   </ItemGroup>
 
 </Project>
