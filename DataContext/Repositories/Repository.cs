@@ -22,24 +22,24 @@
             return await this.collection.CountDocumentsAsync(filter);
         }
 
-        public IFindFluent<TEntity, TEntity> Find(FilterDefinition<TEntity> filter)
+        public List<TEntity> Find(FilterDefinition<TEntity> filter)
         {
-            return this.collection.Find(filter);
+            return this.collection.Find(filter).ToList();
         }
 
-        public IFindFluent<TEntity, TEntity> Find(Expression<Func<TEntity, bool>> filter)
+        public List<TEntity> Find(Expression<Func<TEntity, bool>> filter)
         {
-            return this.collection.Find(filter);
+            return this.collection.Find(filter).ToList();
         }
 
-        public async Task<IAsyncCursor<TEntity>> FindAsync(FilterDefinition<TEntity> filter)
+        public async Task<List<TEntity>> FindAsync(FilterDefinition<TEntity> filter)
         {
-            return await this.collection.FindAsync(filter);
+            return await this.collection.FindAsync(filter).Result.ToListAsync();
         }
 
-        public async Task<IAsyncCursor<TEntity>> FindAsync(Expression<Func<TEntity, bool>> filter)
+        public async Task<List<TEntity>> FindAsync(Expression<Func<TEntity, bool>> filter)
         {
-            return await this.collection.FindAsync(filter);
+            return await this.collection.FindAsync(filter).Result.ToListAsync();
         }
 
         public async Task<TEntity> FindOneAndReplaceAsync(FilterDefinition<TEntity> filter, TEntity replacement)

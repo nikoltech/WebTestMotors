@@ -5,6 +5,7 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using System.Linq;
 
     public class GlobalRepository : IGlobalRepository
     {
@@ -18,7 +19,7 @@
         // TODO: page, count
         public async Task<List<Car>> GetCarListAsync()
         {
-            List<Car> carList = await this.context.Cars.Find(c => true).ToListAsync();
+            List<Car> carList = await this.context.Cars.FindAsync(c => true);
 
             return carList;
         }
@@ -27,7 +28,7 @@
         {
             id = id ?? throw new ArgumentNullException(nameof(id));
 
-            Car car = await this.context.Cars.Find(c => c.Id.Equals(id)).FirstOrDefaultAsync();
+            Car car = (await this.context.Cars.FindAsync(c => c.Id.Equals(id))).FirstOrDefault();
 
             if (car == null)
             {
@@ -44,8 +45,7 @@
             Car existCar = null;
             if (!string.IsNullOrEmpty(entity.Id))
             {
-                //existCar = await this.context.Cars.Find<Car>(c => c.Id.Equals(entity.Id)).FirstOrDefaultAsync();
-                existCar = await this.context.Cars.Find(c => c.Id.Equals(entity.Id)).FirstOrDefaultAsync();
+                existCar = (await this.context.Cars.FindAsync(c => c.Id.Equals(entity.Id))).FirstOrDefault();
             }
             if (existCar != null)
             {
@@ -63,8 +63,7 @@
         {
             entity = entity ?? throw new ArgumentNullException(nameof(entity));
 
-            //Car existCar = await this.context.Cars.Find<Car>(c => c.Id.Equals(entity.Id)).FirstOrDefaultAsync();
-            Car existCar = await this.context.Cars.Find(c => c.Id.Equals(entity.Id)).FirstOrDefaultAsync();
+            Car existCar = (await this.context.Cars.FindAsync(c => c.Id.Equals(entity.Id))).FirstOrDefault();
             if (existCar == null)
             {
                 throw new Exception($"Car with id {entity.Id} does not exists.");
@@ -80,7 +79,7 @@
         {
             id = id ?? throw new ArgumentNullException(nameof(id));
 
-            Car car = await this.context.Cars.Find(c => c.Id.Equals(id)).FirstOrDefaultAsync();
+            Car car = (await this.context.Cars.FindAsync(c => c.Id.Equals(id))).FirstOrDefault();
             if (car == null)
             {
                 throw new Exception($"Car with id {id} does not exists.");

@@ -91,7 +91,7 @@
             }
         }
 
-        [HttpDelete("Remove")]
+        [HttpDelete("Remove/{id}")]
         public async Task<IActionResult> RemoveCarAsync(string id)
         {
             try
