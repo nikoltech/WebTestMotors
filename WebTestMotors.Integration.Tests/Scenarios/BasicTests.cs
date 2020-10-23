@@ -20,27 +20,15 @@ using Xunit;
 
 namespace WebTestMotors.Integration.Tests.Scenarios
 {
+    // TODO: Refactoring with setup & launch WebApplicationFactory
     public class BasicTests
         : IClassFixture<WebApplicationFactory<Startup>>
     {
         private readonly WebApplicationFactory<Startup> _factory;
 
-
-        // Mocks
-        private Mock<IOptions<MongoDbSettings>> _mockMongoOptions;
-
-        private Mock<IMongoDatabase> _mockMongoDB;
-
-        private Mock<IMongoClient> _mockMongoClient;
-
-
         public BasicTests(WebApplicationFactory<Startup> factory)
         {
             this._factory = factory;
-
-            this._mockMongoOptions = new Mock<IOptions<MongoDbSettings>>();
-            this._mockMongoDB = new Mock<IMongoDatabase>();
-            this._mockMongoClient = new Mock<IMongoClient>();
         }
 
         [Fact]
@@ -237,100 +225,194 @@ namespace WebTestMotors.Integration.Tests.Scenarios
             Assert.Equal(newCar.Description, resultCar.FirstOrDefault()?.Description);
         }
 
-        //[Fact]
-        //public async Task AddCarTestAsync()
-        //{
-        //    // Arange
-        //    Car addCar = new Car
-        //    {
-        //        Name = "SomeCar2",
-        //        Description = "SomeDesc"
-        //    };
+        [Fact]
+        public async Task AddCarTestAsync()
+        {
+            // Arange
+            Car addCar = new Car
+            {
+                Name = "SomeCar2",
+                Description = "SomeDesc"
+            };
 
-        //    Car existCar = new Car
-        //    {
-        //        Id = "45dsfdg",
-        //        Name = "SomeCar2",
-        //        Description = "SomeDesc"
-        //    };
+            Mock<IDataContext> _mockContext = new Mock<IDataContext>();
 
-        //    Mock<IDataContext> _mockContext = new Mock<IDataContext>();
+            Mock<IMongoCollection<Car>> _mockCollection = new Mock<IMongoCollection<Car>>();
+            _mockCollection.SetupAllProperties();
 
-        //    Mock<IMongoCollection<Car>> _mockCollection = new Mock<IMongoCollection<Car>>();
-        //    _mockCollection.SetupAllProperties();
+            // Storage
+            List<Car> _carList = new List<Car>();
 
-        //    List<Car> _carList = new List<Car>();
-        //    _carList.Add(existCar);
+            // Mock
+            Mock<IAsyncCursor<Car>> _carCursor = new Mock<IAsyncCursor<Car>>();
+            _carCursor.Setup(_ => _.Current).Returns(_carList);
+            _carCursor
+                .SetupSequence(_ => _.MoveNext(It.IsAny<CancellationToken>()))
+                .Returns(true)
+                .Returns(false);
+            _carCursor
+                .SetupSequence(_ => _.MoveNextAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(true))
+                .Returns(Task.FromResult(false));
 
-        //    // Mock
-        //    Mock<IAsyncCursor<Car>> _carCursor = new Mock<IAsyncCursor<Car>>();
-        //    _carCursor.Setup(_ => _.Current).Returns(_carList);
-        //    _carCursor
-        //        .SetupSequence(_ => _.MoveNext(It.IsAny<CancellationToken>()))
-        //        .Returns(true)
-        //        .Returns(false);
-        //    _carCursor
-        //        .SetupSequence(_ => _.MoveNextAsync(It.IsAny<CancellationToken>()))
-        //        .Returns(Task.FromResult(true))
-        //        .Returns(Task.FromResult(false));
+            // AddCursor
+            _mockCollection.Setup(op => op.FindSync<Car>(It.IsAny<FilterDefinition<Car>>(),
+                It.IsAny<FindOptions<Car, Car>>(),
+                It.IsAny<CancellationToken>())).Returns(_carCursor.Object);
 
-        //    // AddCursor
-        //    _mockCollection.Setup(op => op.FindSync<Car>(It.IsAny<FilterDefinition<Car>>(),
-        //        It.IsAny<FindOptions<Car, Car>>(),
-        //        It.IsAny<CancellationToken>())).Returns(_carCursor.Object);
+            _mockCollection.Setup(op => op.FindAsync(It.IsAny<FilterDefinition<Car>>(),
+                It.IsAny<FindOptions<Car, Car>>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync(_carCursor.Object);
 
-        //    _mockCollection.Setup(op => op.FindAsync(It.IsAny<FilterDefinition<Car>>(),
-        //        It.IsAny<FindOptions<Car, Car>>(),
-        //        It.IsAny<CancellationToken>())).ReturnsAsync(_carCursor.Object);
+            _mockCollection.Setup(op => op.InsertOne(It.IsAny<Car>(),
+                It.IsAny<InsertOneOptions>(),
+                It.IsAny<CancellationToken>())).Callback(() => _carList.Add(addCar));
 
-        //    _mockCollection.Setup(op => op.InsertOne(It.IsAny<Car>(),
-        //        It.IsAny<InsertOneOptions>(),
-        //        It.IsAny<CancellationToken>())).Callback(() => _carList.Add(addCar));
+            _mockCollection.Setup(op => op.InsertOneAsync(It.IsAny<Car>(),
+                It.IsAny<InsertOneOptions>(),
+                It.IsAny<CancellationToken>())).Callback(() => _carList.Add(addCar));
 
-        //    _mockCollection.Setup(op => op.InsertOneAsync(It.IsAny<Car>(),
-        //        It.IsAny<InsertOneOptions>(),
-        //        It.IsAny<CancellationToken>())).Callback(() => _carList.Add(addCar));
+            // Mock GetCollection
+            Mock<IDataContext> mockIDataContext = new Mock<IDataContext>();
+            mockIDataContext.Setup(c => c.Cars).Returns(_mockCollection.Object).Verifiable();
 
-        //    // Mock GetCollection
-        //    Mock<IDataContext> mockIDataContext = new Mock<IDataContext>();
-        //    mockIDataContext.Setup(c => c.Cars).Returns(_mockCollection.Object).Verifiable();
+            var client = this._factory
+                .WithWebHostBuilder(builder =>
+                    builder.ConfigureTestServices(services =>
+                    {
+                        var descriptor = services.SingleOrDefault(
+                            d => d.ServiceType ==
+                                typeof(IDataContext));
 
-        //    var client = this._factory
-        //        .WithWebHostBuilder(builder =>
-        //            builder.ConfigureTestServices(services =>
-        //            {
-        //                var descriptor = services.SingleOrDefault(
-        //                    d => d.ServiceType ==
-        //                        typeof(IDataContext));
+                        services.Remove(descriptor);
 
-        //                services.Remove(descriptor);
+                        services.AddScoped(typeof(IDataContext), services => mockIDataContext.Object);
+                    }))
+                .CreateClient();
 
-        //                services.AddScoped(typeof(IDataContext), services => mockIDataContext.Object);
-        //            }))
-        //        .CreateClient();
+            // Act
+            var carContent = Newtonsoft.Json.JsonConvert.SerializeObject(addCar);
 
-        //    // Act
-            
-        //    var carContent = Newtonsoft.Json.JsonConvert.SerializeObject(addCar);
+            StringContent stringContent = new StringContent(carContent, Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("/api/car/CreateUpdate", stringContent);
 
-        //    StringContent stringContent = new StringContent(carContent, Encoding.UTF8, "application/json");
-        //    var response = await client.PostAsync("/api/car/CreateUpdate", stringContent);
-        //    //var response = await client.GetAsync($"/api/car/{newCar.Id}");
-        //    //var response = await client.GetAsync($"/api/car/list");
+            response.EnsureSuccessStatusCode();
 
-        //    response.EnsureSuccessStatusCode();
+            // Assert
+            var responseString = await response.Content?.ReadAsStringAsync();
 
-        //    // Assert
-        //    var responseString = await response.Content?.ReadAsStringAsync();
+            Car resultCar = (Car)Newtonsoft.Json.JsonConvert.DeserializeObject(responseString, typeof(Car));
+            Assert.Single(_carList);
+            Assert.Equal(addCar.Name, resultCar?.Name);
+            Assert.Equal(addCar.Description, resultCar?.Description);
+        }
 
-        //    Car resultCar = (Car)Newtonsoft.Json.JsonConvert.DeserializeObject(responseString, typeof(Car));
-        //    Assert.Equal(addCar.Name, resultCar.Name);
-        //    Assert.Equal(addCar.Description, resultCar.Description);
+        [Fact]
+        public async Task PartialUpdateCarTestAsync()
+        {
+            // Arange
+            Car existCar = new Car
+            {
+                Id = "dskgbjsdjgk",
+                Name = "SomeCar2",
+                Description = "SomeDesc"
+            };
 
-        //    //List<Car> resultCar = (List<Car>)Newtonsoft.Json.JsonConvert.DeserializeObject(responseString, typeof(List<Car>));
-        //    //Assert.Equal(newCar.Name, resultCar.FirstOrDefault()?.Name);
-        //    //Assert.Equal(newCar.Description, resultCar.FirstOrDefault()?.Description);
-        //}
+            Car updateCarInfo = new Car
+            {
+                Id = existCar.Id,
+                Name = "ChangedCar",
+            };
+
+            Mock<IDataContext> _mockContext = new Mock<IDataContext>();
+
+            Mock<IMongoCollection<Car>> _mockCollection = new Mock<IMongoCollection<Car>>();
+            _mockCollection.SetupAllProperties();
+
+            // Storage
+            List<Car> _carList = new List<Car>();
+            _carList.Add(existCar);
+
+            // Mock
+            Mock<IAsyncCursor<Car>> _carCursor = new Mock<IAsyncCursor<Car>>();
+            _carCursor.Setup(_ => _.Current).Returns(_carList);
+            _carCursor
+                .SetupSequence(_ => _.MoveNext(It.IsAny<CancellationToken>()))
+                .Returns(true)
+                .Returns(false);
+            _carCursor
+                .SetupSequence(_ => _.MoveNextAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(true))
+                .Returns(Task.FromResult(false));
+
+            // AddCursor
+            _mockCollection.Setup(op => op.FindSync<Car>(It.IsAny<FilterDefinition<Car>>(),
+                It.IsAny<FindOptions<Car, Car>>(),
+                It.IsAny<CancellationToken>())).Returns(_carCursor.Object);
+
+            _mockCollection.Setup(op => op.FindAsync(It.IsAny<FilterDefinition<Car>>(),
+                It.IsAny<FindOptions<Car, Car>>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync(_carCursor.Object);
+
+            //_mockCollection.Setup(op => op.InsertOne(It.IsAny<Car>(),
+            //    It.IsAny<InsertOneOptions>(),
+            //    It.IsAny<CancellationToken>()));//.Callback(() => _carList.Add(addCar));
+
+            //_mockCollection.Setup(op => op.InsertOneAsync(It.IsAny<Car>(),
+            //    It.IsAny<InsertOneOptions>(),
+            //    It.IsAny<CancellationToken>()));//.Callback(() => _carList.Add(addCar));
+
+            // ReplaceOne
+            Mock<ReplaceOneResult> mockReplaceOneResult = new Mock<ReplaceOneResult>();
+            mockReplaceOneResult.Setup(r => r.IsAcknowledged).Returns(true);
+
+            _mockCollection.Setup(op => op.ReplaceOne(It.IsAny<FilterDefinition<Car>>(),
+                It.IsAny<Car>(),
+                It.IsAny<ReplaceOptions>(),
+                It.IsAny<CancellationToken>()))
+                .Returns(mockReplaceOneResult.Object);
+            //.Callback(() => _carList.Add(existCar));
+
+            _mockCollection.Setup(op => op.ReplaceOneAsync(It.IsAny<FilterDefinition<Car>>(),
+                It.IsAny<Car>(),
+                It.IsAny<ReplaceOptions>(),
+                It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockReplaceOneResult.Object);
+
+            // Mock GetCollection
+            Mock<IDataContext> mockIDataContext = new Mock<IDataContext>();
+            mockIDataContext.Setup(c => c.Cars).Returns(_mockCollection.Object).Verifiable();
+
+            var client = this._factory
+                .WithWebHostBuilder(builder =>
+                    builder.ConfigureTestServices(services =>
+                    {
+                        var descriptor = services.SingleOrDefault(
+                            d => d.ServiceType ==
+                                typeof(IDataContext));
+
+                        services.Remove(descriptor);
+
+                        services.AddScoped(typeof(IDataContext), services => mockIDataContext.Object);
+                    }))
+                .CreateClient();
+
+            // Act
+            var carContent = Newtonsoft.Json.JsonConvert.SerializeObject(updateCarInfo);
+
+            StringContent stringContent = new StringContent(carContent, Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("/api/car/CreateUpdate", stringContent);
+
+            response.EnsureSuccessStatusCode();
+
+            // Assert
+            var responseString = await response.Content?.ReadAsStringAsync();
+
+            Car resultCar = (Car)Newtonsoft.Json.JsonConvert.DeserializeObject(responseString, typeof(Car));
+            Assert.Single(_carList);
+            Assert.Equal(updateCarInfo.Name, resultCar?.Name);
+            Assert.Equal(existCar.Description, resultCar?.Description);
+        }
 
         [Fact]
         public async Task GetCarListTestAsync()
@@ -474,8 +556,8 @@ namespace WebTestMotors.Integration.Tests.Scenarios
             var responseString = await response.Content?.ReadAsStringAsync();
 
             Car resultCar = (Car)Newtonsoft.Json.JsonConvert.DeserializeObject(responseString, typeof(Car));
-            Assert.Equal(newCar.Name, resultCar.Name);
-            Assert.Equal(newCar.Description, resultCar.Description);
+            Assert.Equal(newCar.Name, resultCar?.Name);
+            Assert.Equal(newCar.Description, resultCar?.Description);
         }
     }
 }

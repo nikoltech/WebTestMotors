@@ -1,19 +1,39 @@
 ﻿namespace WebTestMotors.DataAccess.Repositories
 {
-    using WebTestMotors.DataAccess.Entities;
+    using MongoDB.Driver;
+    using System;
     using System.Collections.Generic;
+    using System.Linq.Expressions;
     using System.Threading.Tasks;
 
-    public interface IRepository
+    public interface IRepository<TEntity>
     {
-        Task<List<Car>> GetCarListAsync();
+        string CollectionName { get; }
 
-        Task<Car> GetCarAsync(string id);
+        Task<long> CountAsync(FilterDefinition<TEntity> filter);
+        
+        IFindFluent<TEntity, TEntity> Find(FilterDefinition<TEntity> filter);
+        
+        IFindFluent<TEntity, TEntity> Find(Expression<Func<TEntity, bool>> filter);
 
-        Task<Car> CreateCarAsync(Car entity);
+        Task<IAsyncCursor<TEntity>> FindAsync(FilterDefinition<TEntity> filter);
 
-        Task<Car> UpdateCarAsync(Car entity);
+        Task<IAsyncCursor<TEntity>> FindAsync(Expression<Func<TEntity, bool>> filter);
 
-        Task<bool> RemoveCarAsync(string id);
+        Task<TEntity> FindOneAndReplaceAsync(FilterDefinition<TEntity> filter, TEntity replacement);
+        
+        Task<TEntity> FindOneAndReplaceAsync(Expression<Func<TEntity, bool>> filter, TEntity replacement);
+
+        Task InsertOneAsync(TEntity entity);
+
+        Task InsertManyAsync(IEnumerable<TEntity> list);
+
+        Task<DeleteResult> DeleteOneAsync(FilterDefinition<TEntity> filter);
+
+        Task<DeleteResult> DeleteOneAsync(Expression<Func<TEntity, bool>> filter);
+
+        Task<DeleteResult> DeleteManyAsync(FilterDefinition<TEntity> filter);
+
+        Task<DeleteResult> DeleteManyAsync(Expression<Func<TEntity, bool>> filter);
     }
 }

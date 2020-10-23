@@ -30,15 +30,17 @@ namespace WebTestMotors
             services.AddSingleton<IMongoDbSettings>(sp =>
                 sp.GetRequiredService<IOptions<MongoDbSettings>>().Value);
 
-            services.AddScoped<IMongoDatabase>(sp => {
-                var dbParams = sp.GetRequiredService<IMongoDbSettings>();
-                var client = new MongoClient(dbParams.ConnectionString);
-                return client.GetDatabase(dbParams.DatabaseName);
-            });
+            //services.AddScoped<IMongoDatabase>(sp => {
+            //    var dbParams = sp.GetRequiredService<IMongoDbSettings>();
+            //    var client = new MongoClient(dbParams.ConnectionString);
+            //    return client.GetDatabase(dbParams.DatabaseName);
+            //});
 
             // Resolve dependencies
+            services.AddScoped<IMongoDatabaseFactory, MongoDatabaseFactory>();
+            services.AddScoped<IRepositoryFactory, RepositoryFactory>();
             services.AddScoped<IDataContext, DataContext>();
-            services.AddScoped<IRepository, Repository>();
+            services.AddScoped<IGlobalRepository, GlobalRepository>();
 
             services.AddControllers();
         }

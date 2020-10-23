@@ -12,9 +12,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTestMotors.Integration.Tests", "WebTestMotors.Integration.Tests\WebTestMotors.Integration.Tests.csproj", "{ED2D07CD-D664-4B53-A1FD-6F0EBA7335B9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1E485B8-B564-44E1-809C-2817FD7C33B2}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

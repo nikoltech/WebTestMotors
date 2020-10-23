@@ -1,10 +1,10 @@
 ﻿namespace WebTestMotors.DataAccess
 {
-    using MongoDB.Driver;
     using WebTestMotors.DataAccess.Entities;
+    using WebTestMotors.DataAccess.Repositories;
 
     public interface IDataContext
     {
-        IMongoCollection<Car> Cars { get; }
+        public IRepository<Car> Cars { get; }
     }
 }

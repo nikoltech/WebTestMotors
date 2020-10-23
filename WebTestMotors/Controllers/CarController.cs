@@ -11,9 +11,9 @@
     [Route("api/[controller]")]
     public class CarController : ControllerBase
     {
-        private readonly IRepository repository;
+        private readonly IGlobalRepository repository;
 
-        public CarController(IRepository repo)
+        public CarController(IGlobalRepository repo)
         {
             this.repository = repo;
         }
@@ -73,9 +73,14 @@
                 {
                     Car existCar = await this.repository.GetCarAsync(car.Id).ConfigureAwait(false);
 
-                    JsonConvert.PopulateObject(JsonConvert.SerializeObject(car), existCar);
+                    JsonSerializerSettings serializerSettings = new JsonSerializerSettings
+                    {
+                        NullValueHandling = NullValueHandling.Ignore
+                    };
 
-                    result = await this.repository.UpdateCarAsync(car).ConfigureAwait(false);
+                    JsonConvert.PopulateObject(JsonConvert.SerializeObject(car), existCar, serializerSettings);
+
+                    result = await this.repository.UpdateCarAsync(existCar).ConfigureAwait(false);
                 }
 
                 return this.Ok(result);
