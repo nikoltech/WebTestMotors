@@ -23,7 +23,6 @@
   <ItemGroup>
     <Folder Include="BasicTests\" />
     <Folder Include="Fixtures\" />
-    <Folder Include="Helpers\" />
     <Folder Include="IntegrationTests\" />
     <Folder Include="AuthTests\" />
   </ItemGroup>
