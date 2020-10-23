@@ -2,18 +2,19 @@
 {
     using WebTestMotors.DataAccess.Entities;
     using MongoDb;
-    using MongoDB.Driver;
+    using WebTestMotors.DataAccess.Repositories;
+    using System;
 
-    public class DataContext
+    public class DataContext : IDataContext
     {
-        public DataContext(IMongoDbSettings settings)
+        public DataContext(IRepositoryFactory repoFactory, IMongoDbSettings dbSettings)
         {
-            var client = new MongoClient(settings.ConnectionString);
-            var database = client.GetDatabase(settings.DatabaseName);
+            repoFactory = repoFactory ?? throw new ArgumentNullException(nameof(repoFactory));
+            dbSettings = dbSettings ?? throw new ArgumentNullException(nameof(dbSettings));
 
-            this.Cars = database.GetCollection<Car>("Cars");
+            this.Cars = repoFactory.Create<Car>(new RepositoryItemOptions { CollectionName = "Cars", DatabaseName = dbSettings.DatabaseName, ConnectionString = dbSettings.ConnectionString });
         }
 
-        public readonly IMongoCollection<Car> Cars;
+        public IRepository<Car> Cars { get; private set; }
     }
 }
