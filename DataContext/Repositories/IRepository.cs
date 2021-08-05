@@ -1,6 +1,7 @@
 ﻿namespace WebTestMotors.DataAccess.Repositories
 {
     using MongoDB.Driver;
+    using MongoDB.Driver.Linq;
     using System;
     using System.Collections.Generic;
     using System.Linq.Expressions;
@@ -9,6 +10,10 @@
     public interface IRepository<TEntity>
     {
         string CollectionName { get; }
+
+        IMongoCollection<TEntity> Collection { get; }
+
+        IMongoQueryable<TEntity> AsQueryable();
 
         Task<long> CountAsync(FilterDefinition<TEntity> filter);
 

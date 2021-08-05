@@ -19,7 +19,8 @@
         // TODO: page, count
         public async Task<List<Car>> GetCarListAsync()
         {
-            List<Car> carList = await this.context.Cars.FindAsync(c => true);
+            List<Car> carList = await this.context.Cars.AsQueryable().ToListAsync();
+            //List<Car> carList = await this.context.Cars.FindAsync(c => true);
 
             return carList;
         }
