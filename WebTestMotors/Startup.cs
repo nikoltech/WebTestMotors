@@ -9,6 +9,7 @@ namespace WebTestMotors
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
+    using Microsoft.OpenApi.Models;
     using MongoDB.Driver;
 
     public class Startup
@@ -42,6 +43,11 @@ namespace WebTestMotors
             services.AddScoped<IDataContext, DataContext>();
             services.AddScoped<IGlobalRepository, GlobalRepository>();
 
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebTestMotors API", Version = "v1" });
+            });
+
             services.AddControllers();
         }
 
@@ -51,6 +57,8 @@ namespace WebTestMotors
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebTestMotors API v1"));
             }
             else
             {
